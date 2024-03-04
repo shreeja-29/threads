@@ -1,0 +1,96 @@
+#include <stdio.h>
+
+// Number of processes and resources
+#define N 5
+#define R 3
+
+// Maximum resources that each process can request
+int max_resources[N][R] = {
+    {7, 5, 3},
+    {3, 2, 2},
+    {9, 0, 2},
+    {2, 2, 2},
+    {4, 3, 3}
+};
+
+// Allocation of resources to each process
+int allocation[N][R] = {
+    {0, 1, 0},
+    {2, 0, 0},
+    {3, 0, 2},
+    {2, 1, 1},
+    {0, 0, 2}
+};
+
+// Resources available in the system
+int available[R] = {3, 3, 2};
+
+// Need matrix for each process
+int need[N][R];
+
+// Function to initialize the need matrix
+void initialize_need() {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < R; j++) {
+            need[i][j] = max_resources[i][j] - allocation[i][j];
+        }
+    }
+}
+
+// Function to check if the system is in a safe state
+int is_safe() {
+    int work[R], finish[N];
+
+    // Initialize work and finish arrays
+    for (int i = 0; i < R; i++) {
+        work[i] = available[i];
+    }
+    for (int i = 0; i < N; i++) {
+        finish[i] = 0;
+    }
+
+    int count = 0;
+    while (count < N) {
+        int found = 0;
+        for (int i = 0; i < N; i++) {
+            if (finish[i] == 0) {
+                int j;
+                for (j = 0; j < R; j++) {
+                    if (need[i][j] > work[j]) {
+                        break;
+                    }
+                }
+                if (j == R) {
+                    // Allocate resources to the process
+                    for (j = 0; j < R; j++) {
+                        work[j] += allocation[i][j];
+                    }
+                    // Mark the process as finished
+                    finish[i] = 1;
+                    count++;
+                    found = 1;
+                }
+            }
+        }
+
+        // If no process can be allocated resources, the system is in an unsafe state
+        if (found == 0) {
+            return 0;
+        }
+    }
+
+    // If all processes have been allocated resources, the system is in a safe state
+    return 1;
+}
+
+int main() {
+    initialize_need();
+
+    if (is_safe()) {
+        printf("The system is in a safe state.\n");
+    } else {
+        printf("The system is in an unsafe state.\n");
+    }
+
+    return 0;
+}
